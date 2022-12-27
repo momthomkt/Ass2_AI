@@ -108,13 +108,18 @@ def surroundPoint(board, pace):
     board_result = copyBoard(board)
     cPoint = carryPoint(board, pace)
     tryMove(board_result, pace)
-    for point in cPoint:
-        board_result[point[0]][point[1]] = -board_result[point[0]][point[1]]
+
+    lst_points = [(end_row, end_col)]
+    if cPoint != False:
+        for point in cPoint:
+            board_result[point[0]][point[1]] = -board_result[point[0]][point[1]]
+
+        lst_points = lst_points + cPoint
     result = []
     start_row, start_col = pace[0][0], pace[0][1]
     end_row, end_col = pace[1][0], pace[1][1]
     # Các điểm cần xét gồm: quân cờ vừa đi(end_row, end_col), và các điểm vừa bị gánh(cPoint). Các điểm này đều có thể chẹt quân địch
-    lst_points = [(end_row, end_col)] + cPoint
+    # lst_points = [(end_row, end_col)] + cPoint
     for point in lst_points:
         # Hàng đợi chứa các vị trí quân cờ địch cần duyệt
         Q = queue.Queue()
