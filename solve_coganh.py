@@ -14,6 +14,29 @@ def tryMove(board, pace):
     board[pace[1][0]][pace[1][1]] = x
     board[pace[0][0]][pace[0][1]] = 0
 
+# Hàm kiểm tra 2 điểm có gần kề nhau không
+def checkNearPoint(board, pace):
+    # Các tọa độ x,y không hợp lệ(lớn hơn 4 hoặc nhỏ hơn 0)
+    for i in pace:
+        for j in i:
+            if j >= size_board or j < 0:
+                return False
+
+    # 2 điểm trùng nhau
+    if pace[0] == pace[1]:
+        return False
+    
+    # 2 điểm không sát nhau    
+    if abs(pace[0][0] - pace[1][0]) > 1 or abs(pace[0][1] - pace[1][1]) > 1:
+        return False
+    
+    # Các ô có tung độ và hoành độ không cùng thuộc số chẵn hoặc số lẻ thì không gần kề theo phương chéo được
+    if pace[0][0] % 2 != pace[0][1] % 2:
+        if abs(pace[0][0] -pace[1][0]) == 1 and abs(pace[0][1] -pace[1][1]) == 1:
+            return False
+
+    return True
+
 # Hàm kiểm tra nước đi hợp lệ
 def checkValidMove(board, pace):
     # Các tọa độ x,y không hợp lệ(lớn hơn 4 hoặc nhỏ hơn 0)
@@ -41,29 +64,51 @@ def checkValidMove(board, pace):
     
     return True
 
-# Hàm trả về danh sách bao gồm 3 danh sách nhỏ các điểm lân cận của 1 quân cờ(Tối đa có 8 điểm xung quanh): result = [M, L, E]. Trong đó:
-    # M(move) = [(a, b), (c, d),...] Danh sách các điểm có thể di chuyển đến trong 1 lượt.
-    # L(league) = [(w, x), (y ,z),...] Danh sách các quân đồng minh.
-    # E(enemy) = [(p, q), (r, t),...] Danh sách quân địch.
-    # Tổng số tuple trong cả ba danh sách M, A, E thuộc tập {3, 4, 5, 8}
+# Hàm vicinityPoint() trả về danh sách bao gồm 3 danh sách nhỏ các điểm lân cận(gần kề) của 1 điểm(Tối đa có 8 điểm xung quanh). Trong đó:
+    # Nếu điểm đó chứa quân cờ:
+        # result = [M, L, E]
+        # M(move) = [(a, b), (c, d),...] Danh sách các điểm có thể di chuyển đến trong 1 lượt.
+        # L(league) = [(w, x), (y ,z),...] Danh sách các quân đồng minh.
+        # E(enemy) = [(p, q), (r, t),...] Danh sách quân địch.
+        # Tổng số tuple trong cả ba danh sách M, A, E thuộc tập {3, 4, 5, 8}
+    # Nếu điểm đó đang trống:
+        # result = [A, B, C]
+        # A = [(a, b), (c, d),...] Danh sách các điểm trống gần kề nó
+        # B = [(w, x), (y ,z),...] Danh sách các quân cờ có giá trị = 1 gần kề
+        # C = [(p, q), (r, t),...] Danh sách các quân cờ có giá trị = -1 gần kề
 def vicinityPoint(board, point):
     p_row = point[0]
     p_col = point[1]
     player = board[p_row][p_col]
     result = [[],[],[]]
     if board[p_row][p_col] != 1 and board[p_row][p_col] != -1:
-        return False
-    for i in [-1,0,1]:
-        for j in [-1,0,1]:
-            # Xét 8 điểm xung quanh của điểm point trừ chính nó
-            if i != 0 or j != 0:
-                if p_row + i >= 0 and p_row + i <= 4 and p_col + j >= 0 and p_col + j <= 4:
-                    if checkValidMove(board, (point, (p_row + i, p_col + j))) == True:
-                        result[0].append((p_row + i, p_col + j))
-                    elif board[p_row + i][p_col + j] == player:
-                        result[1].append((p_row + i, p_col + j))
-                    elif board[p_row + i][p_col + j] == -player:
-                        result[2].append((p_row + i, p_col + j))
+        for i in [-1,0,1]:
+            for j in [-1,0,1]:
+                # Xét 8 điểm xung quanh của điểm point trừ chính nó
+                if i != 0 or j != 0:
+                    if p_row + i >= 0 and p_row + i <= 4 and p_col + j >= 0 and p_col + j <= 4:
+                        # Kiểm tra 2 điểm kề nhau
+                        if checkNearPoint(board, ((p_row, p_col), (p_row + i, p_col + j))):
+                            if board[p_row + i][p_col + j] == 0:
+                                result[0].append((p_row + i, p_col + j))
+                            elif board[p_row + i][p_col + j] == 1:
+                                result[1].append((p_row + i, p_col + j))
+                            elif board[p_row + i][p_col + j] == -1:
+                                result[2].append((p_row + i, p_col + j))
+    else:
+        for i in [-1,0,1]:
+            for j in [-1,0,1]:
+                # Xét 8 điểm xung quanh của điểm point trừ chính nó
+                if i != 0 or j != 0:
+                    if p_row + i >= 0 and p_row + i <= 4 and p_col + j >= 0 and p_col + j <= 4:
+                        # Kiểm tra 2 điểm kề nhau
+                        if checkNearPoint(board, ((p_row, p_col), (p_row + i, p_col + j))): 
+                            if checkValidMove(board, (point, (p_row + i, p_col + j))) == True:
+                                result[0].append((p_row + i, p_col + j))
+                            elif board[p_row + i][p_col + j] == player:
+                                result[1].append((p_row + i, p_col + j))
+                            elif board[p_row + i][p_col + j] == -player:
+                                result[2].append((p_row + i, p_col + j))
     return result
     
 
@@ -171,34 +216,70 @@ def surroundPoint(board, pace):
     
     return result
 
+# Hàm trả về một tuple gồm 2 nhỏ ((a,b),(c,d)) là nước cờ vừa đi của đối thủ
+def findAct(prev_board, board):
+    start = ()
+    end = ()
+    for i in range(len(prev_board)):
+        for j in range(len(prev_board[i])):
+            if prev_board[i][j] == 0 and board[i][j] != 0:
+                end += (i,j)
+            if prev_board[i][j] != 0 and board[i][j] == 0:
+                start += (i,j)
+    return (start,end)
 
+# Hàm trả về một tuple gồm nhiều tuple nhỏ ((a,b),(c,d),...) là tập các điểm bắt buộc phải đi khi đối thủ vừa tạo thế cờ mở
+def checkOpen(prev_board, board, player):
+    # Đầu tiên ta tìm vị trí quân cờ địch vừa đi end
+    start = ()
+    end = ()
+    for i in range(len(prev_board)):
+        for j in range(len(prev_board[i])):
+            if prev_board[i][j] == 0 and board[i][j] != 0:
+                end += (i,j)
+            if prev_board[i][j] != 0 and board[i][j] == 0:
+                start += (i,j)
     
+    result = ()
+    vicPoint = vicinityPoint(board, end)
+    for i in range(len(vicPoint[0])):
+        symmetry_a = vicPoint[0][i][0] * 2 - end[0]
+        symmetry_b = vicPoint[0][i][1] * 2 - end[1]
+        if symmetry_a >= 0 and symmetry_a <= 4 and symmetry_b >=0 and symmetry_b <= 4:
+            if board[symmetry_a][symmetry_b] == board[end[0]][end[1]]:
+                set_enemy = 1
+                if board[end[0]][end[1]] == 1:
+                    set_enemy = 2
+                elif board[end[0]][end[1]] == -1:
+                    set_enemy = 1
+                if len(vicinityPoint(board, (vicPoint[0][i][0], vicPoint[0][i][1]))[set_enemy]) != 0:
+                    result += ((vicPoint[0][i][0], vicPoint[0][i][1]),)
 
+    return result
 
-
-
-
-# def checkOpen(board,player):
-#     for i in range(len(board)):
-#         for j in range(len(board[i])):
-#             if board[i][j] == 0:
-#                 if i != 0 and i != 4:
-#                     if 
 
 red = -1
 blue = 1
     
-board = [[  0,  0, -1, -1,  1],
-        [   0, -1, -1,  0, -1],
-        [  -1,  1,  1,  1, -1],
-        [   0, -1,  1, -1,  0],
-        [   0,  0, -1,  0,  1]]
-player = red
-pace = ((0,2),(1,3))
-result = checkValidMove(board, pace)
-print(result)
-if result:
-    print("carryPoint: ", carryPoint(board, pace))
-    print(surroundPoint(board, pace))
-print()
-# print(vicinityPoint(board, (2,2)))
+board = [[  1,  0,  1,  0,  1],
+        [   1,  1,  1,  1,  1],
+        [   1, -1,  1,  0,  0],
+        [  -1, -1,  0,  0,  1],
+        [   0,  0,  1,  0,  1]]
+
+board2 =[[  1,  0,  1,  0,  1],
+        [   1,  1,  1,  1,  1],
+        [   1, -1,  1,  0,  0],
+        [  -1,  0,  0,  0,  1],
+        [   0, -1,  1,  0,  1]]
+# player = red
+# pace = ((0,2),(1,3))
+# result = checkValidMove(board, pace)
+# print(result)
+# if result:
+#     print("carryPoint: ", carryPoint(board, pace))
+#     print(surroundPoint(board, pace))
+# print()
+# print(findAct(board, board2))
+# print(vicinityPoint(board, (0,1)))
+print(checkOpen(board, board2, 1))
