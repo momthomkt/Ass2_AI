@@ -228,7 +228,7 @@ def findAct(prev_board, board):
                 start += (i,j)
     return (start,end)
 
-# Hàm trả về một tuple gồm nhiều tuple nhỏ ((a,b),(c,d),...) là tập các điểm bắt buộc phải đi khi đối thủ vừa tạo thế cờ mở
+# Hàm trả về một tuple (a,b) hoặc là một tuple rỗng () là điểm bắt buộc phải đi khi đối thủ vừa tạo thế cờ mở
 def checkOpen(prev_board, board, player):
     # Đầu tiên ta tìm vị trí quân cờ địch vừa đi end
     start = ()
@@ -239,23 +239,17 @@ def checkOpen(prev_board, board, player):
                 end += (i,j)
             if prev_board[i][j] != 0 and board[i][j] == 0:
                 start += (i,j)
-    
-    result = ()
-    vicPoint = vicinityPoint(board, end)
-    for i in range(len(vicPoint[0])):
-        symmetry_a = vicPoint[0][i][0] * 2 - end[0]
-        symmetry_b = vicPoint[0][i][1] * 2 - end[1]
-        if symmetry_a >= 0 and symmetry_a <= 4 and symmetry_b >=0 and symmetry_b <= 4:
-            if board[symmetry_a][symmetry_b] == board[end[0]][end[1]]:
-                set_enemy = 1
-                if board[end[0]][end[1]] == 1:
-                    set_enemy = 2
-                elif board[end[0]][end[1]] == -1:
-                    set_enemy = 1
-                if len(vicinityPoint(board, (vicPoint[0][i][0], vicPoint[0][i][1]))[set_enemy]) != 0:
-                    result += ((vicPoint[0][i][0], vicPoint[0][i][1]),)
+                
+    vicPoint = vicinityPoint(board, start)
+    if len(vicPoint[1]) == 0 or len(vicPoint[2]) == 0:
+        return ()
 
-    return result
+    if board[start[0] + 1][start[1]] == board[start[0] - 1][start[1]] == board[end[0]][end[1]] or board[start[0]][start[1] + 1] == board[start[0]][start[1] - 1] == board[end[0]][end[1]]:
+        return start 
+    if start[0] % 2 == start[1] % 2:
+        if board[start[0] + 1][start[1] + 1] == board[start[0] - 1][start[1] - 1] == board[end[0]][end[1]] or board[start[0] + 1][start[1] - 1] == board[start[0] - 1][start[1] + 1] == board[end[0]][end[1]]:
+            return start
+    return ()
 
 
 red = -1
