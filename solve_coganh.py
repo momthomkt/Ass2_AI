@@ -239,16 +239,23 @@ def checkOpen(prev_board, board, player):
                 end += (i,j)
             if prev_board[i][j] != 0 and board[i][j] == 0:
                 start += (i,j)
-                
+    result = ()
     vicPoint = vicinityPoint(board, start)
     if len(vicPoint[1]) == 0 or len(vicPoint[2]) == 0:
         return ()
-
-    if board[start[0] + 1][start[1]] == board[start[0] - 1][start[1]] == board[end[0]][end[1]] or board[start[0]][start[1] + 1] == board[start[0]][start[1] - 1] == board[end[0]][end[1]]:
-        return start 
-    if start[0] % 2 == start[1] % 2:
-        if board[start[0] + 1][start[1] + 1] == board[start[0] - 1][start[1] - 1] == board[end[0]][end[1]] or board[start[0] + 1][start[1] - 1] == board[start[0] - 1][start[1] + 1] == board[end[0]][end[1]]:
+    if start[0] + 1 <= 4 and start[0] - 1 >= 0:
+        if board[start[0] + 1][start[1]] == board[start[0] - 1][start[1]] == board[end[0]][end[1]]:
             return start
+    if start[1] + 1 <= 4 and start[1] - 1 >= 0:
+        if board[start[0]][start[1] + 1] == board[start[0]][start[1] - 1] == board[end[0]][end[1]]:
+            return start
+    if start[0] % 2 == start[1] % 2:
+        if start[0] + 1 <= 4 and start[1] + 1 <= 4 and start[0] - 1 >= 0 and start[1] - 1 >= 0:
+            if board[start[0] + 1][start[1] + 1] == board[start[0] - 1][start[1] - 1] == board[end[0]][end[1]]:
+                return start
+        if start[0] + 1 <= 4 and start[1] - 1 >= 0 and start[0] - 1 >= 0 and start[1] + 1 <= 4:
+            if board[start[0] + 1][start[1] - 1] == board[start[0] - 1][start[1] + 1] == board[end[0]][end[1]]:
+                return start
     return ()
 
 
